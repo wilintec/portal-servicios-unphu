@@ -1,0 +1,84 @@
+name: Actualizar portal desde Excel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "datos/Servicios*.xlsx"
+      - "scripts/generar_portal.py"
+      - "requirements.txt"
+      - ".github/workflows/actualizar-portal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generar-y-publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+
+      - name: Regenerar index.html desde el Excel más reciente
+        run: python scripts/generar_portal.py
+
+      - name: Verificar que el portal contiene datos
+        run: |
+          grep -q 'const services=\[' index.html
+          if grep -q 'const services=\[\];' index.html; then
+            echo "El portal quedó sin servicios." >&2
+            exit 1
+          fi
+
+      - name: Guardar index.html actualizado en el repositorio
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "El portal ya estaba actualizado."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "Actualizar portal desde Excel de servicios"
+            git push
+          fi
+
+      - name: Preparar sitio para GitHub Pages
+        run: |
+          rm -rf _site
+          mkdir _site
+          cp index.html _site/index.html
+          cp .nojekyll _site/.nojekyll
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Cargar artefacto de GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
