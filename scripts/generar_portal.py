@@ -3,7 +3,7 @@
 
 Uso local:
     python scripts/generar_portal.py
-    python scripts/generar_portal.py --excel datos/ServiciosV2.xlsx
+    python scripts/generar_portal.py --excel datos/Servicios.xlsx
 
 El script abre el Excel solamente en modo lectura. Conserva el diseño de index.html
 y reemplaza únicamente el bloque delimitado por BEGIN_GENERATED_DATA y
@@ -33,6 +33,7 @@ MONTHS_ES = (
 
 CANONICAL_HEADERS = {
     "laboratorio": "Laboratorio",
+    "contacto": "Contacto",
     "servicio": "Servicio",
     "requiere equipo del herbario": "Requiere Equipo del Herbario",
     "descripcion y alcance": "Descripcion y Alcance",
@@ -158,6 +159,7 @@ def read_services(excel_path: Path) -> list[dict[str, Any]]:
             "id": len(services) + 1,
             "sourceRow": excel_row_number,
             "laboratory": laboratory,
+            "contact": clean(value(values, "contacto")),
             "serviceType": service_type,
             "requiresEquipment": parse_requires_equipment(
                 value(values, "requiere equipo del herbario")
