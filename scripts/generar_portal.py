@@ -35,7 +35,7 @@ CANONICAL_HEADERS = {
     "laboratorio": "Laboratorio",
     "contacto": "Contacto",
     "servicio": "Servicio",
-    "requiere equipo del Laboratorio": "Requiere Equipo del Laboratorio",
+    "requiere equipo del laboratorio": "Requiere Equipo del Laboratorio",
     "descripcion y alcance": "Descripcion y Alcance",
     "tipo de usuario al que podria dirigirse": "Tipo de usuario",
     "equipos requeridos para su prestacion": "Equipos requeridos",
@@ -162,7 +162,7 @@ def read_services(excel_path: Path) -> list[dict[str, Any]]:
             "contact": clean(value(values, "contacto")),
             "serviceType": service_type,
             "requiresEquipment": parse_requires_equipment(
-                value(values, "requiere equipo del Laboratorio")
+                value(values, "requiere equipo del laboratorio")
             ),
             "description": description,
             "audience": clean(value(values, "tipo de usuario al que podria dirigirse")),
